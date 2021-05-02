@@ -18,6 +18,10 @@ public class GridCreator : MonoBehaviour
     [ShowInInspector]
     private bool gridToggle = false;
 
+    NavMeshPath NavMeshPath;
+
+    public NavMeshAgent NavMeshAgent;
+
     private void FixedUpdate()
     {
         if (Grid.Count == 0) return;
@@ -25,9 +29,8 @@ public class GridCreator : MonoBehaviour
         foreach (Cell cell in Grid)
         {
             if (!cell.IsActive) break;
-                cell.ToggleHighlight(Vector3.Distance(MouseInputManager.Instance.HitPosition, cell.transform.position) < 0.5f);
+                cell.ToggleHighlight(Vector3.Distance(MouseInputManager.Instance.MousePosition, cell.transform.position) < 0.5f);
         }
-
     }
 
     [Button]
@@ -41,6 +44,10 @@ public class GridCreator : MonoBehaviour
         {
             cell.ToggleGraphics(gridToggle);
         }
+        NavMeshAgent.Warp(Grid[0].transform.position);
+        NavMeshPath = new NavMeshPath();
+        NavMeshAgent.CalculatePath(Grid[Grid.Count - 1].transform.position, NavMeshPath);
+        
     }
 
     [Button]
@@ -54,6 +61,22 @@ public class GridCreator : MonoBehaviour
         }
         Grid.Clear();
 
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (NavMeshPath == null) return;
+        Gizmos.color = Color.red;
+        for (int i = 0; i < NavMeshPath.corners.Length; i++)
+        {
+            if (i == 0)
+                Gizmos.DrawLine(NavMeshPath.corners[0], NavMeshPath.corners[1]);
+            else if (i == NavMeshPath.corners.Length - 1)
+                Gizmos.DrawSphere(NavMeshPath.corners[i], 0.25f);
+            else
+                Gizmos.DrawLine(NavMeshPath.corners[i], NavMeshPath.corners[i+1]);
+
+        }
     }
 
     [Button]
