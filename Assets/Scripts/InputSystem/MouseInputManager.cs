@@ -8,7 +8,7 @@ public class MouseInputManager : Singleton<MouseInputManager>
     public Vector3 MousePosition;
     public Vector3 HitPosition;
     LayerMask LayerMask;
-    public MouseEvent MouseEvent = new MouseEvent();
+    public MouseEvent OnMouseClicked = new MouseEvent();
     private void Start()
     {
         LayerMask = LayerMask.GetMask("Ground");
@@ -29,7 +29,7 @@ public class MouseInputManager : Singleton<MouseInputManager>
             if (Physics.Raycast(ray, out hit, LayerMask))
             {
                 HitPosition = hit.point;
-                MouseEvent.Invoke(HitPosition);
+                OnMouseClicked.Invoke(HitPosition);
             }
         }
     }

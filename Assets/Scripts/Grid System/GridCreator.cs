@@ -17,13 +17,53 @@ public class GridCreator : MonoBehaviour
     private List<Cell> Grid = new List<Cell>();
     [ShowInInspector]
     private List<Cell> GridPath = new List<Cell>();
-
+    [ShowInInspector]
+    private List<Cell> SelectedCell = new List<Cell>();
     [ShowInInspector]
     private bool gridToggle = false;
 
     NavMeshPath NavMeshPath;
 
     public NavMeshAgent NavMeshAgent;
+
+    private void OnEnable()
+    {
+        MouseInputManager.Instance.OnMouseClicked.AddListener(SelectCell);
+    }
+
+    private void OnDisable()
+    {
+        MouseInputManager.Instance.OnMouseClicked.RemoveListener(SelectCell);
+
+
+    }
+
+    private void SelectCell(Vector3 clickedPosition)
+    {
+        if (SelectedCell.Count >= 3)
+        {
+            GridPath.Clear();
+            SelectedCell.Clear();
+        }
+        
+        Debug.Log("Select Cell");
+
+        foreach (Cell cell in Grid)
+        {
+            if (!cell.IsActive) break;
+            AddSelectedCell(Vector3.Distance(clickedPosition, cell.transform.position) < 0.75f,cell);
+            if (Vector3.Distance(clickedPosition, cell.transform.position) < 0.75f) break;
+        }
+    }
+
+    private void AddSelectedCell(bool check,Cell cell)
+    {
+        if (check && !SelectedCell.Contains(cell))
+        {
+            Debug.Log(Vector3.Distance(MouseInputManager.Instance.HitPosition, cell.transform.position));
+            SelectedCell.Add(cell);
+        }
+    }
 
     private void FixedUpdate()
     {
@@ -32,7 +72,17 @@ public class GridCreator : MonoBehaviour
         foreach (Cell cell in Grid)
         {
             if (!cell.IsActive) break;
-                cell.ToggleHighlight(Vector3.Distance(MouseInputManager.Instance.MousePosition, cell.transform.position) < 0.5f);
+            cell.ToggleHighlight(Vector3.Distance(MouseInputManager.Instance.MousePosition, cell.transform.position) < 0.5f);
+        }
+
+        if (SelectedCell.Count == 2)
+        {
+            FindPath(SelectedCell[0], SelectedCell[1]);
+        }
+
+        foreach (Cell cell in SelectedCell)
+        {
+            cell.ToggleHighlight(true);
         }
     }
 
@@ -51,12 +101,12 @@ public class GridCreator : MonoBehaviour
     }
 
     [Button]
-    private void FindPath(int StartPosition,  int FinishPosition)
+    private void FindPath(Cell StartPosition,  Cell FinishPosition)
     {
-        GridPath.Clear();
-        NavMeshAgent.Warp(Grid[StartPosition].transform.position);
+        
+        NavMeshAgent.Warp(Grid[Grid.IndexOf(StartPosition)].transform.position);
         NavMeshPath = new NavMeshPath();
-        NavMeshAgent.CalculatePath(Grid[FinishPosition].transform.position, NavMeshPath);
+        NavMeshAgent.CalculatePath(Grid[Grid.IndexOf(FinishPosition)].transform.position, NavMeshPath);
 
         for (int i = 0; i < NavMeshPath.corners.Length-1; i++)
         {
