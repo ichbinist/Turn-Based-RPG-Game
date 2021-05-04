@@ -16,6 +16,9 @@ public class GridCreator : MonoBehaviour
     [ShowInInspector]
     private List<Cell> Grid = new List<Cell>();
     [ShowInInspector]
+    private List<Cell> GridPath = new List<Cell>();
+
+    [ShowInInspector]
     private bool gridToggle = false;
 
     NavMeshPath NavMeshPath;
@@ -44,10 +47,33 @@ public class GridCreator : MonoBehaviour
         {
             cell.ToggleGraphics(gridToggle);
         }
-        NavMeshAgent.Warp(Grid[0].transform.position);
+
+    }
+
+    [Button]
+    private void FindPath(int StartPosition,  int FinishPosition)
+    {
+        GridPath.Clear();
+        NavMeshAgent.Warp(Grid[StartPosition].transform.position);
         NavMeshPath = new NavMeshPath();
-        NavMeshAgent.CalculatePath(Grid[Grid.Count - 1].transform.position, NavMeshPath);
-        
+        NavMeshAgent.CalculatePath(Grid[FinishPosition].transform.position, NavMeshPath);
+
+        for (int i = 0; i < NavMeshPath.corners.Length-1; i++)
+        {
+            RaycastHit[] hits;
+            hits = Physics.RaycastAll(NavMeshPath.corners[i], NavMeshPath.corners[i+1] - NavMeshPath.corners[i], Vector3.Distance(NavMeshPath.corners[i], NavMeshPath.corners[i+1]), LayerMask.GetMask("GridCell"));
+            System.Array.Sort(hits, (x, y) => x.distance.CompareTo(y.distance));
+            for (int j = 0; j < hits.Length; j++)
+            {
+                RaycastHit hit = hits[j];
+                Cell cell = hit.transform.GetComponent<Cell>();
+
+                if (cell && !GridPath.Contains(cell))
+                {
+                    GridPath.Add(cell);
+                }
+            }
+        }
     }
 
     [Button]
@@ -67,16 +93,23 @@ public class GridCreator : MonoBehaviour
     {
         if (NavMeshPath == null) return;
         Gizmos.color = Color.red;
-        for (int i = 0; i < NavMeshPath.corners.Length; i++)
-        {
-            if (i == 0)
-                Gizmos.DrawLine(NavMeshPath.corners[0], NavMeshPath.corners[1]);
-            else if (i == NavMeshPath.corners.Length - 1)
-                Gizmos.DrawSphere(NavMeshPath.corners[i], 0.25f);
-            else
-                Gizmos.DrawLine(NavMeshPath.corners[i], NavMeshPath.corners[i+1]);
 
+        for (int i = 0; i < NavMeshPath.corners.Length-1; i++)
+        {
+                Gizmos.DrawLine(NavMeshPath.corners[i], NavMeshPath.corners[i+1]);
         }
+
+        Gizmos.color = Color.blue;
+
+        if(GridPath.Count != 0)
+        {
+            for (int i = 0; i < GridPath.Count-1; i++)
+            {
+                if(GridPath[i].Neighbors.Contains(GridPath[i + 1]))
+                    Gizmos.DrawLine(GridPath[i].transform.position, GridPath[i+1].transform.position);
+            }
+        }
+
     }
 
     [Button]

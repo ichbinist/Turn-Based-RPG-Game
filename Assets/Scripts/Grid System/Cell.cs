@@ -11,10 +11,7 @@ public class Cell : MonoBehaviour
 
     LayerMask LayerMask;
 
-    public Cell NorthCell;
-    public Cell SouthCell;
-    public Cell EastCell;
-    public Cell WestCell;
+    public List<Cell> Neighbors = new List<Cell>(); // Yukari Asagi Sol Sag
 
     private void Start()
     {
@@ -39,27 +36,27 @@ public class Cell : MonoBehaviour
 
         if (Physics.Raycast(ray, out hit, 1f, LayerMask))
         {
-            NorthCell = hit.transform.GetComponent<Cell>();
+            Neighbors.Add(hit.transform.GetComponent<Cell>());
         }
 
         ray = new Ray(transform.position, -transform.forward);
 
         if (Physics.Raycast(ray, out hit, 1f, LayerMask))
         {
-            SouthCell = hit.transform.GetComponent<Cell>();
+            Neighbors.Add(hit.transform.GetComponent<Cell>());
         }
 
         ray = new Ray(transform.position, transform.right);
 
         if (Physics.Raycast(ray, out hit, 1f, LayerMask))
         {
-            WestCell = hit.transform.GetComponent<Cell>();
+            Neighbors.Add(hit.transform.GetComponent<Cell>());
         }
         ray = new Ray(transform.position, -transform.right);
 
         if (Physics.Raycast(ray, out hit, 1f, LayerMask))
         {
-            EastCell = hit.transform.GetComponent<Cell>();
+            Neighbors.Add(hit.transform.GetComponent<Cell>());
         }
     }
 

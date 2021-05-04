@@ -49,6 +49,7 @@ MonoBehaviour:
   Graphics: {fileID: 2294387409225470118}
   Highlight: {fileID: 2055978623388013733}
   IsActive: 0
+  Neighbors: []
 --- !u!65 &4567690314262890872
 BoxCollider:
   m_ObjectHideFlags: 0
