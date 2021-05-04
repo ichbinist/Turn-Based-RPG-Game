@@ -18,7 +18,7 @@ public class GridCreator : MonoBehaviour
     [ShowInInspector]
     private List<Cell> GridPath = new List<Cell>();
     [ShowInInspector]
-    private List<Cell> SelectedCell = new List<Cell>();
+    private Cell SelectedCell;
     [ShowInInspector]
     private bool gridToggle = false;
 
@@ -29,23 +29,24 @@ public class GridCreator : MonoBehaviour
     private void OnEnable()
     {
         MouseInputManager.Instance.OnMouseClicked.AddListener(SelectCell);
+        CharacterManager.Instance.Character.OnGridChange.AddListener(ClearPath);
     }
 
     private void OnDisable()
     {
         MouseInputManager.Instance.OnMouseClicked.RemoveListener(SelectCell);
+        CharacterManager.Instance.Character.OnGridChange.RemoveListener(ClearPath);
+    }
 
-
+    private void ClearPath()
+    {
+        GridPath.Clear();
     }
 
     private void SelectCell(Vector3 clickedPosition)
     {
-        if (SelectedCell.Count >= 3)
-        {
-            GridPath.Clear();
-            SelectedCell.Clear();
-        }
-        
+        GridPath.Clear();
+ 
         Debug.Log("Select Cell");
 
         foreach (Cell cell in Grid)
@@ -58,10 +59,10 @@ public class GridCreator : MonoBehaviour
 
     private void AddSelectedCell(bool check,Cell cell)
     {
-        if (check && !SelectedCell.Contains(cell))
+        if (check)
         {
             Debug.Log(Vector3.Distance(MouseInputManager.Instance.HitPosition, cell.transform.position));
-            SelectedCell.Add(cell);
+            SelectedCell = cell;
         }
     }
 
@@ -75,14 +76,10 @@ public class GridCreator : MonoBehaviour
             cell.ToggleHighlight(Vector3.Distance(MouseInputManager.Instance.MousePosition, cell.transform.position) < 0.5f);
         }
 
-        if (SelectedCell.Count == 2)
+        if (SelectedCell != null)
         {
-            FindPath(SelectedCell[0], SelectedCell[1]);
-        }
-
-        foreach (Cell cell in SelectedCell)
-        {
-            cell.ToggleHighlight(true);
+            FindPath(CharacterManager.Instance.Character.CurrentCell, SelectedCell);
+            SelectedCell.ToggleHighlight(true);
         }
     }
 
